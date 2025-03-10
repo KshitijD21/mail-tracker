@@ -1,0 +1,16 @@
+TODO
+    - User Auth (Email, Password, Name)
+    - Tracking Link (Type["email", "etc"], code, userId)
+    - Tracking Detail (trackingLinkId, userAgent, Ip)
+    - Detail summary (trackingLinkId, count)
+
+
+# code and userId both are composite unique
+example.com/api/t/{userid}/{code}
+
+# code is only unique
+example.com/api/t/{code}
+
+Frontend
+frontend.com/t/{code} --> (proxy) --> example.com/api/t/{code}
+frontend.com/api/_link/... --> (proxy) --> example.com/api/...
