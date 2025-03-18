@@ -66,5 +66,4 @@ public class EmailTrackingController {
         return new ResponseEntity<>(imageData, responseHeaders, HttpStatus.OK);
     }
 
-
 }

@@ -25,6 +25,10 @@ public class UserPrinciple implements UserDetails {
         return user.getPassword();
     }
 
+    public Users getUser() {
+        return user;
+    }
+
     @Override
     public String getUsername() {
         return user.getUserName();

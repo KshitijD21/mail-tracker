@@ -31,12 +31,15 @@ public class UserService {
     @Autowired
     private JWTService jwtService;
 
-    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
 
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
 
     public Users register (Users user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        return repo.save(user);
+        Users saveduser =  repo.save(user);
+        System.out.println("user register id: " + saveduser.getId());
+
+        return saveduser;
     }
 
     public String verify(Users users) {
@@ -50,8 +53,14 @@ public class UserService {
             System.out.println("authentication.isAuthenticated(): " + authentication.isAuthenticated());
 
             if (authentication.isAuthenticated()) {
-
-                return jwtService.generateToken(users.getUserName());
+                Users authenticatedUser = repo.findByUserName(users.getUserName());
+                if (authenticatedUser != null) {
+                    System.out.println("Authenticated user: " + authenticatedUser);
+                    return jwtService.generateToken(users.getUserName(), authenticatedUser.getId()); // Use the userId from the database
+                } else {
+                    System.out.println("User not found in the database");
+                    return "fail";
+                }
             }
 
         } catch (Exception e) {
