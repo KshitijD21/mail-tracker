@@ -36,21 +36,26 @@ public class JWTService {
         }
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String userId) {
         Map<String, Object> claims = new HashMap<>();
+        System.out.println("userId in generateToken " + userId);
+        claims.put("userId", userId);
 
         return Jwts.builder()
                 .claims()
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 10000 * 600 * 300))
                 .and()
                 .signWith(getKey())
                 .compact();
-
     }
 
+    public String getUserId(String token) {
+        System.out.println("getUserId " + extractClaim(token, claims -> claims.get("userId", String.class)) );
+        return extractClaim(token, claims -> claims.get("userId", String.class));
+    }
 
     private SecretKey getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
