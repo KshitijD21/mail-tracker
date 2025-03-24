@@ -41,24 +41,24 @@ public class TrackingLinkController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
     }
 
-    @GetMapping("/track/{uniqueCode}")
-        public ResponseEntity<Void> trackLink(@PathVariable String uniqueCode, HttpServletRequest request) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            String clientIp = request.getRemoteAddr();
-            String userAgent = request.getHeader("User-Agent");
-            System.out.println("userAgent " + userAgent);
-            String forwardedFor = request.getHeader("X-Forwarded-For");
-            if (forwardedFor != null && !forwardedFor.isEmpty()) {
-                clientIp = forwardedFor.split(",")[0].trim();
-            }
-            UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
-            String userId = userPrinciple.getUser().getId();
-            return trackingLinkService.updateTrackingLinkData(uniqueCode, userId, clientIp, userAgent);
-        }
-
-    }
+//    @GetMapping("/track/{uniqueCode}")
+//        public ResponseEntity<Void> trackLink(@PathVariable String uniqueCode, HttpServletRequest request) {
+//
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+//            String clientIp = request.getRemoteAddr();
+//            String userAgent = request.getHeader("User-Agent");
+//            System.out.println("userAgent " + userAgent);
+//            String forwardedFor = request.getHeader("X-Forwarded-For");
+//            if (forwardedFor != null && !forwardedFor.isEmpty()) {
+//                clientIp = forwardedFor.split(",")[0].trim();
+//            }
+//            UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+//            String userId = userPrinciple.getUser().getId();
+//            return trackingLinkService.updateTrackingLinkData(uniqueCode, userId, clientIp, userAgent);
+//        }
+//
+//    }
 
 
 }
