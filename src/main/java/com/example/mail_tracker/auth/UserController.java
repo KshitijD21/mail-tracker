@@ -1,11 +1,11 @@
 package com.example.mail_tracker.auth;
 
+import com.example.mail_tracker.common.ApiResponse;
+import com.example.mail_tracker.entities.LoginRequest;
 import com.example.mail_tracker.entities.Users;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,9 +22,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody Users user) {
-        System.out.println(user);
-        return userService.verify(user);
+    public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginRequest loginRequest) {
+        System.out.println("loginRequest " + loginRequest);
+        return userService.verify(loginRequest);
     }
 
     @GetMapping("/allUser")

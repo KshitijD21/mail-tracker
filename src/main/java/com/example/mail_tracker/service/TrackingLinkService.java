@@ -7,5 +7,7 @@ import java.util.Map;
 public interface TrackingLinkService {
     ResponseEntity<Map<String, Object>> getTrackingLink(String userId, String clientIp);
 
-    ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String userId, String clientIp, String userAgent);
+    ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent);
+
+    ResponseEntity<Boolean> uploadTrackingId(String trackingId, String userId);
 }

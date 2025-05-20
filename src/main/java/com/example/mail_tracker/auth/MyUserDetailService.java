@@ -18,14 +18,12 @@ public class MyUserDetailService implements UserDetailsService {
     @Autowired
     private UserRepo userRepo;
 
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepo.findByUserName(username);
-
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Users user = userRepo.findByEmail(email);
         if (user == null) {
-            System.out.println("User not found for username: " + username);
+            System.out.println("User not found for username: " + email);
             throw new UsernameNotFoundException("User not found");
         }
-
         System.out.println("User found: " + user);
         return new UserPrinciple(user);
     }

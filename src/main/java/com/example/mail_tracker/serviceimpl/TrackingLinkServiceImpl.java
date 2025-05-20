@@ -1,12 +1,18 @@
 package com.example.mail_tracker.serviceimpl;
 
 
+import com.example.mail_tracker.entities.DetailSummaryEntity;
 import com.example.mail_tracker.entities.TrackingDetailEntity;
 import com.example.mail_tracker.entities.TrackingLinkEntity;
 import com.example.mail_tracker.entities.enums.TrackingType;
+import com.example.mail_tracker.repository.DetailSummaryRepository;
+import com.example.mail_tracker.repository.TrackingDetailRepository;
 import com.example.mail_tracker.repository.TrackingLinkRepository;
 import com.example.mail_tracker.service.TrackingLinkService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +22,21 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 @Service
 public class TrackingLinkServiceImpl implements TrackingLinkService {
 
     @Autowired
     private TrackingLinkRepository trackingLinkRepository;
+
+    @Autowired
+    private TrackingDetailRepository trackingDetailRepository;
+
+    @Autowired
+    private DetailSummaryRepository detailSummaryRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(TrackingLinkServiceImpl.class);
 
     @Override
     public ResponseEntity<Map<String, Object>> getTrackingLink(String userId, String clientIp) {
@@ -51,21 +66,70 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
     }
 
     @Override
-    public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String userId, String clientIp, String userAgent) {
+    public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent) {
+        try {
+            TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
+                    .trackingLinkId(uniqueCode)
+                    .ip(clientIp)
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .userAgent(userAgent)
+                    .build();
 
-        TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
-                .trackingLinkId(uniqueCode)
-                .ip(clientIp)
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .userAgent(userAgent)
-                .build();
+            boolean isNewUser = trackingDetailRepository.countByIpAndTrackingLinkId(clientIp, uniqueCode) == 0;
 
+            trackingDetailRepository.save(trackingDetailEntity);
 
+            long count = trackingDetailRepository.countTrackingDetails();
 
+//            System.out.println(trackingDetailRepository.findByIp(clientIp));
 
+            DetailSummaryEntity existingDetailSummary = detailSummaryRepository.findByTrackingLinkId(uniqueCode);
 
-        return null;
+            if (existingDetailSummary != null) {
+
+                existingDetailSummary.setTotalOpens(existingDetailSummary.getTotalOpens() + 1);
+                if (isNewUser) {
+                    existingDetailSummary.setUniqueUsers(existingDetailSummary.getUniqueUsers() + 1);
+                }
+                existingDetailSummary.setUpdatedAt(new Date());
+                detailSummaryRepository.save(existingDetailSummary);
+            } else {
+                DetailSummaryEntity detailSummaryEntity = DetailSummaryEntity.builder()
+                        .trackingLinkId(uniqueCode)
+                        .uniqueUsers(1)
+                        .totalOpens(1)
+                        .updatedAt(new Date())
+                        .build();
+
+                detailSummaryRepository.save(detailSummaryEntity);
+            }
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error saving tracking details", e);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Boolean> uploadTrackingId(String trackingId, String userId) {
+
+        try{
+            TrackingLinkEntity trackingLinkEntity = TrackingLinkEntity.builder()
+                    .type(TrackingType.EMAIL)
+                    .code(trackingId)
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .userId(userId)
+                    .build();
+            trackingLinkRepository.save(trackingLinkEntity);
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(false);
+        }
     }
 
     private byte[] generateTrackingPixel() {
@@ -85,5 +149,3 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
         return baos.toByteArray();
     }
 }
-
-

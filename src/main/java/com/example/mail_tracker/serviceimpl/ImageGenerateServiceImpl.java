@@ -23,8 +23,9 @@ public class ImageGenerateServiceImpl implements ImageGenerateService {
 
     @Override
     public String generateImage() throws IOException {
-        System.out.println("Code inside generateImage serviceImpl");
-        return imageGenerationUtils.generateAndUploadImage();
+//        System.out.println("Code inside generateImage serviceImpl");
+//        return imageGenerationUtils.generateAndUploadImage();
+        return  null;
     }
 
 }

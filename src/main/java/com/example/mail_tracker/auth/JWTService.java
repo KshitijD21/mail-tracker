@@ -36,7 +36,9 @@ public class JWTService {
         }
     }
 
-    public String generateToken(String username, String userId) {
+    public String generateToken(String email, String userId) {
+        System.out.println("code is inside generateToken");
+
         Map<String, Object> claims = new HashMap<>();
         System.out.println("userId in generateToken " + userId);
         claims.put("userId", userId);
@@ -44,7 +46,7 @@ public class JWTService {
         return Jwts.builder()
                 .claims()
                 .add(claims)
-                .subject(username)
+                .subject(email)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 10000 * 600 * 300))
                 .and()
@@ -53,16 +55,19 @@ public class JWTService {
     }
 
     public String getUserId(String token) {
+        System.out.println("code is inside getUserId");
+
         System.out.println("getUserId " + extractClaim(token, claims -> claims.get("userId", String.class)) );
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     private SecretKey getKey() {
+        System.out.println("code is inside getKey");
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String getUserName(String token) {
+    public String getEmailFromToken(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -72,6 +77,8 @@ public class JWTService {
     }
 
     private  Claims extractAllClaims(String token) {
+        System.out.println("code is inside extractAllClaims " + token);
+
         return  Jwts.parser()
                 .verifyWith(getKey())
                 .build()
@@ -80,13 +87,19 @@ public class JWTService {
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final  String userName = getUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        System.out.println("code is inside validateToken");
+
+
+        final  String email = getEmailFromToken(token);
+        System.out.println("email from token: " + email);
+        System.out.println("userDetails username: " + userDetails.getUsername());
+
+        return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration)
-                .before(new Date());
+    public boolean isTokenExpired(String token) {
+        final Date expiration = extractAllClaims(token).getExpiration();
+        return expiration.before(new Date());
     }
 
 }

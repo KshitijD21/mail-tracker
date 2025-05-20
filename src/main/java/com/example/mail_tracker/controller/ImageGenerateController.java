@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/images")
 public class ImageGenerateController {
 
     private final ImageGenerateService imageGenerateService;
@@ -21,7 +20,7 @@ public class ImageGenerateController {
         this.imageGenerateService = imageGenerateService;
     }
 
-    @PostMapping("/generate")
+    @PostMapping("/generate/image")
     public ResponseEntity<String> generateImage(@RequestBody String userId) throws IOException {
 
         System.out.println("Code inside generateImage Controller " + userId);
