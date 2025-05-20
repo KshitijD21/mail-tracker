@@ -26,7 +26,50 @@ import java.util.List;
 @Configuration
 public class GoogleConfig {
 
-    private static final String APPLICATION_NAME = "Gmail API Spring Boot";
+//    private static final String APPLICATION_NAME = "Gmail API Spring Boot";
+//    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+//    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+//    private static final List<String> SCOPES = Collections.singletonList(GmailScopes.GMAIL_READONLY);
+//    private static final String CREDENTIALS_FILE_PATH = "credentials.json";
+//
+//    @Bean
+//    public Gmail gmailService() throws Exception {
+//        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+//        return new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//                .setApplicationName(APPLICATION_NAME)
+//                .build();
+//    }
+//
+//    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws Exception {
+//
+////        File clientSecretsFile = new File(CREDENTIALS_FILE_PATH);
+//
+//        ClassPathResource resource = new ClassPathResource(CREDENTIALS_FILE_PATH);
+//
+//        System.out.println("clientSecretsFile " + resource);
+//
+//        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(resource.getInputStream()));
+//
+//        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+//                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+//                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+////                .setDataStoreFactory(new MemoryDataStoreFactory())
+//                .setAccessType("offline")
+//                .build();
+//
+//        System.out.println("flow " + flow.toString());
+//
+////        LocalServerReceiver receiver = new LocalServerReceiver.Builder()
+////                .setPort(8080)
+////                .build();
+//
+//        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+//    }
+
+
+
+
+private static final String APPLICATION_NAME = "Gmail API Spring Boot";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private static final List<String> SCOPES = Collections.singletonList(GmailScopes.GMAIL_READONLY);
@@ -35,34 +78,19 @@ public class GoogleConfig {
     @Bean
     public Gmail gmailService() throws Exception {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        return new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        return new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, null)  // No credentials at startup
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
-    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws Exception {
-
-//        File clientSecretsFile = new File(CREDENTIALS_FILE_PATH);
-
+    public GoogleAuthorizationCodeFlow getFlow() throws Exception {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         ClassPathResource resource = new ClassPathResource(CREDENTIALS_FILE_PATH);
-
-        System.out.println("clientSecretsFile " + resource);
-
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(resource.getInputStream()));
 
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+        return new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-//                .setDataStoreFactory(new MemoryDataStoreFactory())
                 .setAccessType("offline")
                 .build();
-
-        System.out.println("flow " + flow.toString());
-
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder()
-                .setPort(8080)
-                .build();
-
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 }

@@ -29,35 +29,47 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String token = null;
-        String userName = null;
+        String email = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            userName = jwtService.getUserName(token);
+            email = jwtService.getEmailFromToken(token); // ✅ new method
         }
 
-        System.out.println("token " + token);
+        System.out.println("token value is " + token);
 
-        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = context.getBean(MyUserDetailService.class).loadUserByUsername(userName);
+            UserDetails userDetails = context.getBean(MyUserDetailService.class).loadUserByUsername(email);
+
+//            if (jwtService.validateToken(token, userDetails)) {
+//
+//                String userId = jwtService.getUserId(token);
+//                System.out.println("userId in doFilterInternal " + jwtService.getUserId(token));
+//
+////                String userId = jwtService.getUserId(token);
+//
+//                UsernamePasswordAuthenticationToken tokenValue  =
+//                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//
+//                tokenValue.setDetails(userId);
+//
+//                System.out.println("value inside tokenValue " + tokenValue);
+//                tokenValue.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//                SecurityContextHolder.getContext().setAuthentication(tokenValue);
+//            }
 
             if (jwtService.validateToken(token, userDetails)) {
-
-                String userId = jwtService.getUserId(token);
-                System.out.println("userId in doFilterInternal " + jwtService.getUserId(token));
-
-//                String userId = jwtService.getUserId(token);
-
-                UsernamePasswordAuthenticationToken tokenValue  =
+                System.out.println("code is inside jwtService validate toke  function");
+                UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                tokenValue.setDetails(userId);
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                System.out.println("value inside tokenValue " + tokenValue);
-                tokenValue.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(tokenValue);
+                System.out.println("✅ Authenticated: " + userDetails.getUsername());
             }
+
         }
 
         filterChain.doFilter(request, response);

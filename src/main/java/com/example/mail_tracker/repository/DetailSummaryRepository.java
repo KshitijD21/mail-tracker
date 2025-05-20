@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface DetailSummaryRepository extends MongoRepository<DetailSummaryEntity, String> {
 
     @Query("{ 'trackingLinkId' : ?0 }")
-    Users findByTrackingLinkId(String trackingLinkId);
-    
+    DetailSummaryEntity findByTrackingLinkId(String trackingLinkId);
+
 }

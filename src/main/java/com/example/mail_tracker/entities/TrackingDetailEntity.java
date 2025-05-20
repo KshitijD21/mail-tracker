@@ -16,7 +16,6 @@ public class TrackingDetailEntity {
 
     @Field("tracking_link_id")
     private String trackingLinkId;
-
     private String userAgent;
     private String ip;
     private Date createdAt;

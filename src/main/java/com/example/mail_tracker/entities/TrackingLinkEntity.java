@@ -28,6 +28,7 @@ import java.util.Date;
 //}
 
 @Document(collection = "tracking_links")
+@Data
 public class TrackingLinkEntity {
 
     @Id

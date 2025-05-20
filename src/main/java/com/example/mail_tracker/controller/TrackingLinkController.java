@@ -24,6 +24,8 @@ public class TrackingLinkController {
     @GetMapping("/trackingLink" )
     private ResponseEntity<Map<String, Object>> getTrackingLink(HttpServletRequest request) {
 
+        System.out.println("code is inside getTrackingLink " );
+
         String clientIp = request.getRemoteAddr();
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isEmpty()) {
@@ -41,24 +43,29 @@ public class TrackingLinkController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
     }
 
-//    @GetMapping("/track/{uniqueCode}")
-//        public ResponseEntity<Void> trackLink(@PathVariable String uniqueCode, HttpServletRequest request) {
-//
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-//            String clientIp = request.getRemoteAddr();
-//            String userAgent = request.getHeader("User-Agent");
-//            System.out.println("userAgent " + userAgent);
-//            String forwardedFor = request.getHeader("X-Forwarded-For");
-//            if (forwardedFor != null && !forwardedFor.isEmpty()) {
-//                clientIp = forwardedFor.split(",")[0].trim();
-//            }
-//            UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
-//            String userId = userPrinciple.getUser().getId();
-//            return trackingLinkService.updateTrackingLinkData(uniqueCode, userId, clientIp, userAgent);
-//        }
-//
-//    }
+    @GetMapping("/track/{uniqueCode}")
+        public ResponseEntity<Void> trackLink(@PathVariable String uniqueCode, HttpServletRequest request) {
+        System.out.println("request is here " + uniqueCode);
+            String clientIp = request.getRemoteAddr();
+            String userAgent = request.getHeader("User-Agent");
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            if (forwardedFor != null && !forwardedFor.isEmpty()) {
+                clientIp = forwardedFor.split(",")[0].trim();
+            }
+            return trackingLinkService.updateTrackingLinkData(uniqueCode, clientIp, userAgent);
+    }
 
+    @PostMapping("/tracking/ids")
+    public  ResponseEntity<Boolean> uploadTrackingId (@RequestBody String id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+            String userId = userPrinciple.getUser().getId();
+            return trackingLinkService.uploadTrackingId(id, userId);
+        }
+
+        return ResponseEntity.internalServerError().body(false);
+    }
 
 }
