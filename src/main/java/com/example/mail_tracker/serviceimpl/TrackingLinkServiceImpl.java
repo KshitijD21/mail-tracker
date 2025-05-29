@@ -1,9 +1,7 @@
 package com.example.mail_tracker.serviceimpl;
 
 
-import com.example.mail_tracker.entities.DetailSummaryEntity;
-import com.example.mail_tracker.entities.TrackingDetailEntity;
-import com.example.mail_tracker.entities.TrackingLinkEntity;
+import com.example.mail_tracker.entities.*;
 import com.example.mail_tracker.entities.enums.TrackingType;
 import com.example.mail_tracker.repository.DetailSummaryRepository;
 import com.example.mail_tracker.repository.TrackingDetailRepository;
@@ -114,21 +112,25 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
     }
 
     @Override
-    public ResponseEntity<Boolean> uploadTrackingId(String trackingId, String userId) {
+    public ResponseEntity<TrackingResponse> uploadTrackingId(ComposeBoxEntity composeBoxEntity, String userId) {
 
         try{
             TrackingLinkEntity trackingLinkEntity = TrackingLinkEntity.builder()
                     .type(TrackingType.EMAIL)
-                    .code(trackingId)
+                    .code(composeBoxEntity.getTrackingObject().getTrackingId())
                     .createdAt(new Date())
                     .updatedAt(new Date())
+                    .to(composeBoxEntity.getTo())
+                    .subject(composeBoxEntity.getSubject())
                     .userId(userId)
                     .build();
             trackingLinkRepository.save(trackingLinkEntity);
-            return ResponseEntity.ok(true);
+            return ResponseEntity.ok(new TrackingResponse(true,composeBoxEntity.getTrackingObject().getTrackingId()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.ok(false);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new TrackingResponse(false, composeBoxEntity.getTrackingObject().getTrackingId()));
         }
     }
 
@@ -148,4 +150,27 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
         }
         return baos.toByteArray();
     }
+
+    @Override
+    public  byte[] generateImage(int width, int height) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        Random random = new Random();
+        Color randomColor = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                image.setRGB(x, y, randomColor.getRGB());
+            }
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(image, "png", baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to generate image", e);
+        }
+    }
+
+
 }
