@@ -36,28 +36,9 @@ public class JwtFilter extends OncePerRequestFilter {
             email = jwtService.getEmailFromToken(token); // ✅ new method
         }
 
-        System.out.println("token value is " + token);
-
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = context.getBean(MyUserDetailService.class).loadUserByUsername(email);
-
-//            if (jwtService.validateToken(token, userDetails)) {
-//
-//                String userId = jwtService.getUserId(token);
-//                System.out.println("userId in doFilterInternal " + jwtService.getUserId(token));
-//
-////                String userId = jwtService.getUserId(token);
-//
-//                UsernamePasswordAuthenticationToken tokenValue  =
-//                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//
-//                tokenValue.setDetails(userId);
-//
-//                System.out.println("value inside tokenValue " + tokenValue);
-//                tokenValue.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//                SecurityContextHolder.getContext().setAuthentication(tokenValue);
-//            }
 
             if (jwtService.validateToken(token, userDetails)) {
                 System.out.println("code is inside jwtService validate toke  function");
