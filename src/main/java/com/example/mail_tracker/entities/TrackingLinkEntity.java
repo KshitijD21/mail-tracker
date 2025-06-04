@@ -23,8 +23,20 @@ public class TrackingLinkEntity {
     private String userId;
 
     private String code;
+    private String recipientEmail;
+    private String emailHash;
+    private String subject;
+
+
+    // Previously in detail_summary
+    private int totalOpens;
+    private Date firstOpenedAt;
+    private Date lastOpenedAt;
+    private boolean isOpened;
+    private String lastUserAgent;
+    private String lastClientIp;
+
     private Date createdAt;
     private Date updatedAt;
-    private String[] to;
-    private String subject;
+
 }

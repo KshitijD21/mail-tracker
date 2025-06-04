@@ -6,6 +6,7 @@ import com.example.mail_tracker.entities.enums.TrackingType;
 import com.example.mail_tracker.repository.DetailSummaryRepository;
 import com.example.mail_tracker.repository.TrackingDetailRepository;
 import com.example.mail_tracker.repository.TrackingLinkRepository;
+import com.example.mail_tracker.repository.UserRepo;
 import com.example.mail_tracker.service.TrackingLinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
     private DetailSummaryRepository detailSummaryRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(TrackingLinkServiceImpl.class);
+    @Autowired
+    private UserRepo userRepo;
 
     @Override
     public ResponseEntity<Map<String, Object>> getTrackingLink(String userId, String clientIp) {
@@ -66,44 +69,86 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
     @Override
     public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent) {
         try {
-            TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
-                    .trackingLinkId(uniqueCode)
-                    .ip(clientIp)
-                    .createdAt(new Date())
-                    .updatedAt(new Date())
-                    .userAgent(userAgent)
-                    .build();
-
-            boolean isNewUser = trackingDetailRepository.countByIpAndTrackingLinkId(clientIp, uniqueCode) == 0;
-
-            trackingDetailRepository.save(trackingDetailEntity);
-
-            long count = trackingDetailRepository.countTrackingDetails();
-
-//            System.out.println(trackingDetailRepository.findByIp(clientIp));
-
-            DetailSummaryEntity existingDetailSummary = detailSummaryRepository.findByTrackingLinkId(uniqueCode);
-
-            if (existingDetailSummary != null) {
-
-                existingDetailSummary.setTotalOpens(existingDetailSummary.getTotalOpens() + 1);
-                if (isNewUser) {
-                    existingDetailSummary.setUniqueUsers(existingDetailSummary.getUniqueUsers() + 1);
-                }
-                existingDetailSummary.setUpdatedAt(new Date());
-                detailSummaryRepository.save(existingDetailSummary);
-            } else {
-                DetailSummaryEntity detailSummaryEntity = DetailSummaryEntity.builder()
-                        .trackingLinkId(uniqueCode)
-                        .uniqueUsers(1)
-                        .totalOpens(1)
-                        .updatedAt(new Date())
-                        .build();
-
-                detailSummaryRepository.save(detailSummaryEntity);
+            TrackingLinkEntity trackingLink = trackingLinkRepository.findByCode(uniqueCode).orElse(null);
+            if (trackingLink == null) {
+                return ResponseEntity.notFound().build();
             }
 
+            Users sender = userRepo.findById(trackingLink.getUserId()).orElse(null);
+            if (sender == null) {
+                return ResponseEntity.notFound().build(); // or handle as needed
+            }
+
+            if (trackingLink.getRecipientEmail().equalsIgnoreCase(sender.getEmail())) {
+                return ResponseEntity.ok().build(); // Don't track self-open
+            }
+
+            TrackingDetailEntity detailEntity = TrackingDetailEntity.builder()
+                    .trackingLinkId(uniqueCode)
+                    .ip(clientIp)
+                    .userAgent(userAgent)
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .build();
+            trackingDetailRepository.save(detailEntity);
+
+            trackingLink.setTotalOpens(trackingLink.getTotalOpens() + 1);
+            trackingLink.setLastOpenedAt(new Date());
+            trackingLink.setOpened(true);
+            trackingLink.setLastUserAgent(userAgent);
+            trackingLink.setLastClientIp(clientIp);
+
+
+            if (trackingLink.getFirstOpenedAt() == null) {
+                trackingLink.setFirstOpenedAt(new Date());
+            }
+
+            trackingLink.setUpdatedAt(new Date());
+            trackingLinkRepository.save(trackingLink);
+
             return ResponseEntity.ok().build();
+
+
+//
+//            TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
+//                    .trackingLinkId(uniqueCode)
+//                    .ip(clientIp)
+//                    .createdAt(new Date())
+//                    .updatedAt(new Date())
+//                    .userAgent(userAgent)
+//                    .build();
+//
+//            boolean isNewUser = trackingDetailRepository.countByIpAndTrackingLinkId(clientIp, uniqueCode) == 0;
+//
+//            trackingDetailRepository.save(trackingDetailEntity);
+//
+//            long count = trackingDetailRepository.countTrackingDetails();
+//
+////            System.out.println(trackingDetailRepository.findByIp(clientIp));
+//
+//            DetailSummaryEntity existingDetailSummary = detailSummaryRepository.findByTrackingLinkId(uniqueCode);
+//
+//            if (existingDetailSummary != null) {
+//
+//                existingDetailSummary.setTotalOpens(existingDetailSummary.getTotalOpens() + 1);
+//                if (isNewUser) {
+//                    existingDetailSummary.setUniqueUsers(existingDetailSummary.getUniqueUsers() + 1);
+//                }
+//                existingDetailSummary.setUpdatedAt(new Date());
+//                detailSummaryRepository.save(existingDetailSummary);
+//            } else {
+//                DetailSummaryEntity detailSummaryEntity = DetailSummaryEntity.builder()
+//                        .trackingLinkId(uniqueCode)
+//                        .uniqueUsers(1)
+//                        .totalOpens(1)
+//                        .updatedAt(new Date())
+//                        .build();
+//
+//                detailSummaryRepository.save(detailSummaryEntity);
+//            }
+
+//            return ResponseEntity.ok().build();
+
         } catch (Exception e) {
             logger.error("Error saving tracking details", e);
 
@@ -120,9 +165,17 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
                     .code(composeBoxEntity.getTrackingObject().getTrackingId())
                     .createdAt(new Date())
                     .updatedAt(new Date())
-                    .to(composeBoxEntity.getTo())
+                    .recipientEmail(composeBoxEntity.getRecipientEmail())
                     .subject(composeBoxEntity.getSubject())
                     .userId(userId)
+
+                    // summary defaults
+                    .totalOpens(0)
+                    .firstOpenedAt(null)
+                    .lastOpenedAt(null)
+                    .isOpened(false)
+                    .lastUserAgent(null)
+                    .lastClientIp(null)
                     .build();
             trackingLinkRepository.save(trackingLinkEntity);
             return ResponseEntity.ok(new TrackingResponse(true,composeBoxEntity.getTrackingObject().getTrackingId()));
