@@ -22,7 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-
 @Service
 public class TrackingLinkServiceImpl implements TrackingLinkService {
 
@@ -66,95 +65,164 @@ public class TrackingLinkServiceImpl implements TrackingLinkService {
         return ResponseEntity.ok(response);
     }
 
-    @Override
-    public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent) {
-        try {
-            TrackingLinkEntity trackingLink = trackingLinkRepository.findByCode(uniqueCode).orElse(null);
-            if (trackingLink == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Users sender = userRepo.findById(trackingLink.getUserId()).orElse(null);
-            if (sender == null) {
-                return ResponseEntity.notFound().build(); // or handle as needed
-            }
-
-            if (trackingLink.getRecipientEmail().equalsIgnoreCase(sender.getEmail())) {
-                return ResponseEntity.ok().build(); // Don't track self-open
-            }
-
-            TrackingDetailEntity detailEntity = TrackingDetailEntity.builder()
-                    .trackingLinkId(uniqueCode)
-                    .ip(clientIp)
-                    .userAgent(userAgent)
-                    .createdAt(new Date())
-                    .updatedAt(new Date())
-                    .build();
-            trackingDetailRepository.save(detailEntity);
-
-            trackingLink.setTotalOpens(trackingLink.getTotalOpens() + 1);
-            trackingLink.setLastOpenedAt(new Date());
-            trackingLink.setOpened(true);
-            trackingLink.setLastUserAgent(userAgent);
-            trackingLink.setLastClientIp(clientIp);
-
-
-            if (trackingLink.getFirstOpenedAt() == null) {
-                trackingLink.setFirstOpenedAt(new Date());
-            }
-
-            trackingLink.setUpdatedAt(new Date());
-            trackingLinkRepository.save(trackingLink);
-
-            return ResponseEntity.ok().build();
-
-
+//    @Override
+//    public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent) {
+//        try {
+//            TrackingLinkEntity trackingLink = trackingLinkRepository.findByCode(uniqueCode).orElse(null);
+//            if (trackingLink == null) {
+//                return ResponseEntity.notFound().build();
+//            }
 //
-//            TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
+//            Users sender = userRepo.findById(trackingLink.getUserId()).orElse(null);
+//            if (sender == null) {
+//                return ResponseEntity.notFound().build(); // or handle as needed
+//            }
+//
+//            if (trackingLink.getRecipientEmail().equalsIgnoreCase(sender.getEmail())) {
+//                return ResponseEntity.ok().build(); // Don't track self-open
+//            }
+//
+//            TrackingDetailEntity detailEntity = TrackingDetailEntity.builder()
 //                    .trackingLinkId(uniqueCode)
 //                    .ip(clientIp)
+//                    .userAgent(userAgent)
 //                    .createdAt(new Date())
 //                    .updatedAt(new Date())
-//                    .userAgent(userAgent)
 //                    .build();
+//            trackingDetailRepository.save(detailEntity);
 //
-//            boolean isNewUser = trackingDetailRepository.countByIpAndTrackingLinkId(clientIp, uniqueCode) == 0;
+//            trackingLink.setTotalOpens(trackingLink.getTotalOpens() + 1);
+//            trackingLink.setLastOpenedAt(new Date());
+//            trackingLink.setOpened(true);
+//            trackingLink.setLastUserAgent(userAgent);
+//            trackingLink.setLastClientIp(clientIp);
 //
-//            trackingDetailRepository.save(trackingDetailEntity);
 //
-//            long count = trackingDetailRepository.countTrackingDetails();
-//
-////            System.out.println(trackingDetailRepository.findByIp(clientIp));
-//
-//            DetailSummaryEntity existingDetailSummary = detailSummaryRepository.findByTrackingLinkId(uniqueCode);
-//
-//            if (existingDetailSummary != null) {
-//
-//                existingDetailSummary.setTotalOpens(existingDetailSummary.getTotalOpens() + 1);
-//                if (isNewUser) {
-//                    existingDetailSummary.setUniqueUsers(existingDetailSummary.getUniqueUsers() + 1);
-//                }
-//                existingDetailSummary.setUpdatedAt(new Date());
-//                detailSummaryRepository.save(existingDetailSummary);
-//            } else {
-//                DetailSummaryEntity detailSummaryEntity = DetailSummaryEntity.builder()
-//                        .trackingLinkId(uniqueCode)
-//                        .uniqueUsers(1)
-//                        .totalOpens(1)
-//                        .updatedAt(new Date())
-//                        .build();
-//
-//                detailSummaryRepository.save(detailSummaryEntity);
+//            if (trackingLink.getFirstOpenedAt() == null) {
+//                trackingLink.setFirstOpenedAt(new Date());
 //            }
-
+//
+//            trackingLink.setUpdatedAt(new Date());
+//            trackingLinkRepository.save(trackingLink);
+//
 //            return ResponseEntity.ok().build();
+//
+//
+////
+////            TrackingDetailEntity trackingDetailEntity = TrackingDetailEntity.builder()
+////                    .trackingLinkId(uniqueCode)
+////                    .ip(clientIp)
+////                    .createdAt(new Date())
+////                    .updatedAt(new Date())
+////                    .userAgent(userAgent)
+////                    .build();
+////
+////            boolean isNewUser = trackingDetailRepository.countByIpAndTrackingLinkId(clientIp, uniqueCode) == 0;
+////
+////            trackingDetailRepository.save(trackingDetailEntity);
+////
+////            long count = trackingDetailRepository.countTrackingDetails();
+////
+//////            System.out.println(trackingDetailRepository.findByIp(clientIp));
+////
+////            DetailSummaryEntity existingDetailSummary = detailSummaryRepository.findByTrackingLinkId(uniqueCode);
+////
+////            if (existingDetailSummary != null) {
+////
+////                existingDetailSummary.setTotalOpens(existingDetailSummary.getTotalOpens() + 1);
+////                if (isNewUser) {
+////                    existingDetailSummary.setUniqueUsers(existingDetailSummary.getUniqueUsers() + 1);
+////                }
+////                existingDetailSummary.setUpdatedAt(new Date());
+////                detailSummaryRepository.save(existingDetailSummary);
+////            } else {
+////                DetailSummaryEntity detailSummaryEntity = DetailSummaryEntity.builder()
+////                        .trackingLinkId(uniqueCode)
+////                        .uniqueUsers(1)
+////                        .totalOpens(1)
+////                        .updatedAt(new Date())
+////                        .build();
+////
+////                detailSummaryRepository.save(detailSummaryEntity);
+////            }
+//
+////            return ResponseEntity.ok().build();
+//
+//        } catch (Exception e) {
+//            logger.error("Error saving tracking details", e);
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+//
+//
 
-        } catch (Exception e) {
-            logger.error("Error saving tracking details", e);
+@Override
+public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String clientIp, String userAgent) {
+    try {
+        logger.info("📩 Incoming tracking hit for ID: {}", uniqueCode);
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        Optional<TrackingLinkEntity> optionalLink = trackingLinkRepository.findByCode(uniqueCode);
+        if (optionalLink.isEmpty()) {
+            logger.warn("❌ No tracking link found for code: {}", uniqueCode);
+            return ResponseEntity.notFound().build();
         }
+
+        TrackingLinkEntity trackingLink = optionalLink.get();
+        logger.info("✅ Found tracking link: recipientEmail={}, userId={}", trackingLink.getRecipientEmail(), trackingLink.getUserId());
+
+        // Load sender info
+        Optional<Users> optionalSender = userRepo.findById(trackingLink.getUserId());
+        if (optionalSender.isEmpty()) {
+            logger.warn("❌ No sender user found with ID: {}", trackingLink.getUserId());
+            return ResponseEntity.notFound().build();
+        }
+
+        Users sender = optionalSender.get();
+        logger.info("🔐 Sender email: {}", sender.getEmail());
+
+        // Safe null check
+        String recipientEmail = trackingLink.getRecipientEmail();
+        String senderEmail = sender.getEmail();
+
+        if (recipientEmail != null && recipientEmail.equalsIgnoreCase(senderEmail)) {
+            logger.info("🛑 Ignoring self-open by sender: {}", senderEmail);
+            return ResponseEntity.ok().build(); // Don't track self-open
+        }
+
+        // (Optional) Save log of raw event
+        TrackingDetailEntity detailEntity = TrackingDetailEntity.builder()
+                .trackingLinkId(uniqueCode)
+                .ip(clientIp)
+                .userAgent(userAgent)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .build();
+        trackingDetailRepository.save(detailEntity);
+        logger.info("📝 Tracking detail saved for {}", uniqueCode);
+
+        // Update analytics
+        trackingLink.setTotalOpens(trackingLink.getTotalOpens() + 1);
+        trackingLink.setLastOpenedAt(new Date());
+        trackingLink.setOpened(true);
+        trackingLink.setLastUserAgent(userAgent);
+        trackingLink.setLastClientIp(clientIp);
+
+        if (trackingLink.getFirstOpenedAt() == null) {
+            trackingLink.setFirstOpenedAt(new Date());
+        }
+
+        trackingLink.setUpdatedAt(new Date());
+        trackingLinkRepository.save(trackingLink);
+        logger.info("✅ Tracking link updated for {}", uniqueCode);
+
+        return ResponseEntity.ok().build();
+
+    } catch (Exception e) {
+        logger.error("❌ Error saving tracking details for ID: " + uniqueCode, e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
 
     @Override
     public ResponseEntity<TrackingResponse> uploadTrackingId(ComposeBoxEntity composeBoxEntity, String userId) {
