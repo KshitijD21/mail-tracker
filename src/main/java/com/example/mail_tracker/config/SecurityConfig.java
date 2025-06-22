@@ -31,21 +31,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
+        System.out.println("code is inside securityFilterChain");
+
        return httpSecurity
                .cors(cors -> cors.configurationSource(request -> {
                    var config = new org.springframework.web.cors.CorsConfiguration();
                    config.setAllowCredentials(true);
                    config.setAllowedOrigins(java.util.List.of("http://localhost:3000", "https://mail.google.com")); // frontend origin
                    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                   config.setAllowedHeaders(java.util.List.of("*"));
-                   config.setExposedHeaders(java.util.List.of("Authorization"));
+                   config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "Accept"));                   config.setExposedHeaders(java.util.List.of("Authorization"));
                    return config;
                }))
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(request -> request
                        .requestMatchers("/connect/google", "/oauth/callback", "/login", "/register", "/track/**").permitAll()
                        .anyRequest().authenticated())
-               .httpBasic(Customizer.withDefaults())
+//               .httpBasic(Customizer.withDefaults())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                .build();
