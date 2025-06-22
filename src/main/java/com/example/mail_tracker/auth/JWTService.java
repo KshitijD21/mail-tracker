@@ -37,11 +37,8 @@ public class JWTService {
     }
 
     public String generateToken(String email, String userId) {
-        System.out.println("code is inside generateToken");
 
         Map<String, Object> claims = new HashMap<>();
-        System.out.println("userId in generateToken " + userId);
-        claims.put("userId", userId);
 
         return Jwts.builder()
                 .claims()
@@ -55,14 +52,11 @@ public class JWTService {
     }
 
     public String getUserId(String token) {
-        System.out.println("code is inside getUserId");
 
-        System.out.println("getUserId " + extractClaim(token, claims -> claims.get("userId", String.class)) );
         return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     private SecretKey getKey() {
-        System.out.println("code is inside getKey");
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -77,7 +71,6 @@ public class JWTService {
     }
 
     private  Claims extractAllClaims(String token) {
-        System.out.println("code is inside extractAllClaims " + token);
 
         return  Jwts.parser()
                 .verifyWith(getKey())
@@ -87,12 +80,9 @@ public class JWTService {
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        System.out.println("code is inside validateToken");
 
 
         final  String email = getEmailFromToken(token);
-        System.out.println("email from token: " + email);
-        System.out.println("userDetails username: " + userDetails.getUsername());
 
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
