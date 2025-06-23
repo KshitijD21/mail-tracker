@@ -35,6 +35,7 @@ public class TrackingLinkEntity {
     private boolean isOpened;
     private String lastUserAgent;
     private String lastClientIp;
+    private boolean isFollowUp;
 
     private Date createdAt;
     private Date updatedAt;

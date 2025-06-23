@@ -13,5 +13,6 @@ public interface TrackingLinkRepository extends MongoRepository<TrackingLinkEnti
     Optional<TrackingLinkEntity> findByCode(String code);
     List<TrackingLinkEntity> findAllByUserId(String userId);
     Integer countByUserId(String userId);
+    List<TrackingLinkEntity> findAllByIsFollowUpTrue();
 
 }
