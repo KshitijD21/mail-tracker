@@ -245,6 +245,7 @@ public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String cli
                     .isOpened(false)
                     .lastUserAgent(null)
                     .lastClientIp(null)
+                    .isFollowUp(false)
                     .build();
             trackingLinkRepository.save(trackingLinkEntity);
             return ResponseEntity.ok(new TrackingResponse(true,composeBoxEntity.getTrackingObject().getTrackingId()));
