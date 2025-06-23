@@ -21,7 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
+
 @Service
 public class TrackingLinkServiceImpl implements TrackingLinkService {
 
@@ -228,12 +228,13 @@ public ResponseEntity<Void> updateTrackingLinkData(String uniqueCode, String cli
     public ResponseEntity<TrackingResponse> uploadTrackingId(ComposeBoxEntity composeBoxEntity, String userId) {
 
         try{
+            System.out.println("composeBoxEntity " + composeBoxEntity);
             TrackingLinkEntity trackingLinkEntity = TrackingLinkEntity.builder()
                     .type(TrackingType.EMAIL)
                     .code(composeBoxEntity.getTrackingObject().getTrackingId())
                     .createdAt(new Date())
                     .updatedAt(new Date())
-                    .recipientEmail(composeBoxEntity.getRecipientEmail())
+                    .recipientEmail(composeBoxEntity.getTo()[0])
                     .subject(composeBoxEntity.getSubject())
                     .userId(userId)
 

@@ -36,8 +36,8 @@ public class SecurityConfig {
        return httpSecurity
                .cors(cors -> cors.configurationSource(request -> {
                    var config = new org.springframework.web.cors.CorsConfiguration();
-                   config.setAllowCredentials(true);
-                   config.setAllowedOrigins(java.util.List.of("http://localhost:3000", "https://mail.google.com")); // frontend origin
+                   config.setAllowCredentials(false);
+                   config.setAllowedOrigins(java.util.List.of("*")); // frontend origin
                    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                    config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "Accept"));                   config.setExposedHeaders(java.util.List.of("Authorization"));
                    return config;
